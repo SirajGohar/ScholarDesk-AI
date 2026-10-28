@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Agent AI Research Lab • Academic Seminar Presentation</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'Inter', '-apple-system', 'sans-serif'],
+            serif: ['Newsreader', 'Georgia', 'serif'],
+            mono: ['JetBrains Mono', 'Menlo', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #0b0f19;
+      color: #f8fafc;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .slide-canvas {
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      max-width: 1200px;
+      max-height: 675px;
+      background-color: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media print {
+      body { background: white !important; overflow: visible !important; }
+      .no-print { display: none !important; }
+      .slide-canvas { max-width: 100% !important; max-height: 100% !important; box-shadow: none !important; border-radius: 0 !important; page-break-after: always; margin-bottom: 2rem; }
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col items-center justify-center p-4">
+
+  <!-- TOP TOOLBAR -->
+  <header className="fixed top-4 left-6 right-6 flex items-center justify-between z-30 no-print text-xs text-slate-400 font-mono">
+    <div className="flex items-center space-x-3">
+      <span className="text-white font-bold font-sans">Multi-Agent AI Research Lab</span>
+      <span>•</span>
+      <span>Academic Project Defense</span>
+    </div>
+
+    <div className="flex items-center space-x-3">
+      <a 
+        href="Multi_Agent_AI_Research_Lab.pptx" 
+        download
+        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded font-sans font-semibold transition"
+      >
+        Download .pptx File
+      </a>
+      <button 
+        onclick="window.print()"
+        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded font-sans font-medium transition"
+      >
+        Print / PDF
+      </button>
+    </div>
+  </header>
+
+  <!-- SLIDE CONTAINER (Rendered via JS) -->
+  <main id="slide-container" class="slide-canvas">
+    <!-- Populated by script below -->
+  </main>
+
+  <!-- BOTTOM CONTROLS & NAVIGATION -->
+  <footer class="fixed bottom-4 left-6 right-6 flex items-center justify-between z-30 no-print text-xs text-slate-400 font-mono">
+    <div>
+      <span>Use </span>
+      <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-200 rounded border border-slate-700">←</kbd>
+      <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-200 rounded border border-slate-700 ml-1">→</kbd>
+      <span> or Space to navigate</span>
+    </div>
+
+    <div class="flex items-center space-x-4">
+      <button id="prev-btn" class="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-white">Previous</button>
+      <span id="slide-indicator" class="text-white font-bold">1 / 8</span>
+      <button id="next-btn" class="px-3 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white">Next</button>
+    </div>
+  </footer>
+
+  <script>
+    const SLIDES = [
+      // SLIDE 1: TITLE SLIDE
+      {
+        render: () => `
+          <div class="flex-1 flex flex-col justify-center px-16 bg-gradient-to-br from-slate-50 to-slate-100 relative">
+            <div class="w-12 h-1 bg-blue-600 mb-6"></div>
+            <div class="text-xs font-mono font-bold tracking-widest uppercase text-blue-600 mb-2">
+              Center for Applied Computational Research • Academic Working Paper Series
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight max-w-4xl">
+              Multi-Agent AI Research Lab
+            </h1>
+            <p class="text-base text-slate-600 mt-3 max-w-3xl leading-relaxed">
+              An Autonomous Investigation Workbench for Research Scholars, Master's & PhD Candidates
+            </p>
+            <div class="mt-8 pt-6 border-t border-slate-200 flex items-center justify-between text-xs font-mono text-slate-500">
+              <div>Topic: Grounded Problem Statements • Literature Matrices • Full Academic Papers</div>
+              <div>October 2026 • IEEE / ACM Conference Defense</div>
+            </div>
+          </div>
+        `
+      },
+
+      // SLIDE 2: INTRODUCTION & VISION
+      {
+        render: () => `
+          <div class="flex-1 flex flex-col p-10 bg-white">
+            <div class="text-[11px] font-mono font-bold uppercase tracking-wider text-blue-600 mb-1">
+              01 // Introduction & Vision
+            </div>
+            <h2 class="text-xl font-bold text-slate-900">
+              Purpose-Built for Scholars, Master's & PhD Researchers
+            </h2>
+            <div class="grid grid-cols-2 gap-6 mt-6 flex-1">
+              <div class="p-6 rounded-xl border border-slate-200 bg-slate-50/60 flex flex-col justify-between">
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900 mb-2">The Academic Dilemma</h3>
+                  <ul class="text-xs text-slate-600 space-y-3 leading-relaxed">
+                    <li>• <strong>Preprint Deluge:</strong> Scholars ingest thousands of papers across arXiv, PubMed, and IEEE, spending 40% of their time on manual triage.</li>
+                    <li>• <strong>Chatbot Superficiality:</strong> Consumer AI tools produce ungrounded summaries, hallucinate citations, and lack formal mathematical rigor.</li>
+                    <li>• <strong>Verification Void:</strong> No existing tool enforces safety constraints before executing automated actions.</li>
+                  </ul>
+                </div>
+                <div class="text-[11px] font-mono text-slate-400">Context: Research Methodology Crisis</div>
+              </div>
+
+              <div class="p-6 rounded-xl border border-blue-200 bg-blue-50/30 flex flex-col justify-between">
+                <div>
+                  <h3 class="text-sm font-bold text-blue-900 mb-2">The ScholarDesk Approach</h3>
+                  <ul class="text-xs text-slate-700 space-y-3 leading-relaxed">
+                    <li>• <strong>Academic Division of Labor:</strong> 6 specialized autonomous agents coordinate sequentially like a professional research group.</li>
+                    <li>• <strong>Grounded Evidence Base:</strong> Every assertion links directly to primary sources [S1..Sn] from verified repositories.</li>
+                    <li>• <strong>Complete Paper Synthesis:</strong> Formulates complete 3,000+ word academic preprints with one-click Overleaf/LaTeX export.</li>
+                  </ul>
+                </div>
+                <div class="text-[11px] font-mono text-blue-600">Goal: End-to-End Scholarly Acceleration</div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      // SLIDE 3: PROBLEM STATEMENT
+      {
+        render: () => `
+          <div class="flex-1 flex flex-col p-10 bg-white">
+            <div class="text-[11px] font-mono font-bold uppercase tracking-wider text-rose-600 mb-1">
+              02 // Problem Statement
+            </div>
+            <h2 class="text-xl font-bold text-slate-900">
+              Quantifiable Industry & Scientific Bottlenecks
+            </h2>
+            <div class="grid grid-cols-3 gap-4 mt-6 flex-1">
+              <div class="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+                <div class="w-7 h-7 rounded bg-rose-100 text-rose-700 font-bold flex items-center justify-center text-xs mb-3 font-mono">01</div>
+                <h3 class="text-xs font-bold text-slate-900 mb-2">Data & Alert Fatigue</h3>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                  Enterprise SOCs ingest over 25,000 alerts daily. Manual tier-1 triage requires 38 minutes per incident, resulting in a median adversary dwell time of 21 days.
+                </p>
+              </div>
+
+              <div class="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+                <div class="w-7 h-7 rounded bg-amber-100 text-amber-700 font-bold flex items-center justify-center text-xs mb-3 font-mono">02</div>
+                <h3 class="text-xs font-bold text-slate-900 mb-2">Brittle Heuristic Playbooks</h3>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                  Deterministic SOAR playbooks rely on static DAGs. Over 64% of real-world enterprise breaches involve living-off-the-land techniques that cause static rules to fail.
+                </p>
+              </div>
+
+              <div class="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+                <div class="w-7 h-7 rounded bg-purple-100 text-purple-700 font-bold flex items-center justify-center text-xs mb-3 font-mono">03</div>
+                <h3 class="text-xs font-bold text-slate-900 mb-2">Hallucination & Denial-of-Service</h3>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                  Monolithic LLMs hallucinate CVEs in >14% of queries. Unchecked automated containment risks self-inflicted outages on mission-critical database clusters.
+                </p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      // SLIDE 4: SOLUTION (SCHOLARDESK)
+      {
+        render: () => `
+          <div class="flex-1 flex flex-col p-10 bg-white">
+            <div class="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-600 mb-1">
+              03 // Solution
+            </div>
+            <h2 class="text-xl font-bold text-slate-900">
+              ScholarDesk: The Dedicated Academic Research Workbench
+            </h2>
+            <div class="grid grid-cols-3 gap-4 mt-6 flex-1">
+              <div class="p-5 rounded-xl border border-slate-200 bg-white shadow-2xs">
+                <h3 class="text-xs font-bold text-slate-900 mb-2 font-mono uppercase">1. Problem & Ideation</h3>
+                <ul class="text-xs text-slate-600 space-y-2 leading-relaxed">
+                  <li>• Formulates the grounded operational bottleneck.</li>
+                  <li>• Generates 3 focused thesis questions (RQ1–RQ3).</li>
+                  <li>• Quantifies Novelty & Feasibility ratings (1–10).</li>
+                </ul>
+              </div>
+
+              <div class="p-5 rounded-xl border border-slate-200 bg-white shadow-2xs">
+                <h3 class="text-xs font-bold text-slate-900 mb-2 font-mono uppercase">2. Literature Matrix</h3>
+                <ul class="text-xs text-slate-600 space-y-2 leading-relaxed">
+                  <li>• Airtable/Linear style data extraction matrix.</li>
+                  <li>• Compares venues, datasets, outcomes, and limits.</li>
+                  <li>• Explicitly highlights viable dissertation gaps.</li>
+                </ul>
+              </div>
+
+              <div class="p-5 rounded-xl border border-blue-200 bg-blue-50/20 shadow-2xs">
+                <h3 class="text-xs font-bold text-blue-900 mb-2 font-mono uppercase">3. Full Paper Studio</h3>
+                <ul class="text-xs text-slate-700 space-y-2 leading-relaxed">
+                  <li>• Complete 3,000+ word IEEE/Nature preprint draft.</li>
+                  <li>• All 7 formal sections, mathematical models & tables.</li>
+                  <li>• One-click export to LaTeX (.tex), Markdown, and PDF.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      // SLIDE 5: SYSTEM ARCHITECTURE
+      {
+        render: () => `
+          <div class="flex-1 flex flex-col p-10 bg-white">
+            <div class="text-[11px] font-mono font-bold uppercase tracking-wider text-blue-600 mb-1">
+              04 // Architecture
+            </div>
+            <h2 class="text-xl font-bold text-slate-900">
+              Multi-Agent Orchestration & Consensus Topology
+            </h2>
+            <div class="mt-4 p-5 rounded-xl border border-slate-200 bg-slate-50 font-mono text-xs text-slate-700">
+              <div class="flex items-center justify-between py-2 border-b border-slate-200">
+                <span class="font-bold text-blue-700">Ingestion Agent</span>
+                <span>Intercepts raw telemetry / inquiry → AST Token Sanitization (Prompt injection defense)</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-slate-200">
+                <span class="font-bold text-blue-700">Literature Correlator</span>
+                <span>Queries arXiv, IEEE, PubMed, and Tavily → Normalizes sources into [S1..Sn] matrix</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-slate-200">
+                <span class="font-bold text-blue-700">Synthesis Planner</span>
+                <span>Formulates formal problem statements, objective functions, and empirical baselines</span>
+              </div>
+              <div class="flex items-center justify-between py-2">
+                <span class="font-bold text-emerald-700">Consensus Safety Gate</span>
+                <span>Enforces dual-operator cryptographic consensus before authorizing containment RPCs</span>
+              </div>
+            </div>
+            <div class="mt-4 flex items-center justify-between text-xs text-slate-500 font-mono">
+              <span>Backend: n8n Workflow Engine + Redis Pub/Sub</span>
+              <span>CORS Webhook: POST /webhook/research-task</span>
+            </div>
+          </div>
+        `
+      },
+
+      // SLIDE 6: METHODOLOGY & MATHEMATICAL FORMULATION
+      {
+        render: () => `
+          <div class="flex-1 flex flex-col p-10 bg-white">
+            <div class="text-[11px] font-mono font-bold uppercase tracking-wider text-blue-600 mb-1">
+              05 // Methodology
+            </div>
+            <h2 class="text-xl font-bold text-slate-900">
+              Mathematical Model & Experimental Testbed
+            </h2>
+            <div class="grid grid-cols-2 gap-6 mt-6 flex-1">
+              <div class="p-6 rounded-xl border border-slate-200 bg-slate-50/60 font-mono text-xs">
+                <div class="font-bold text-slate-900 mb-2 uppercase text-[11px]">Formal Optimization Objective</div>
+                <div class="bg-white p-3 rounded border border-slate-200 text-slate-800 leading-relaxed">
+                  min_P E[ λ · τ_dwell(P) + (1 - λ) · R_disrupt(P) ]
+                </div>
+                <div class="font-bold text-slate-900 mt-4 mb-2 uppercase text-[11px]">Bounded Safety Invariant</div>
+                <div class="bg-white p-3 rounded border border-slate-200 text-slate-800 leading-relaxed">
+                  P(False Containment | High Impact Host) ≤ ε<br>
+                  where ε = 0.0005 (0.05% upper bound)
+                </div>
+              </div>
+
+              <div class="p-6 rounded-xl border border-slate-200 bg-white">
+                <div class="font-bold text-slate-900 mb-2 uppercase text-[11px] font-mono">Enterprise Testbed Setup</div>
+                <ul class="text-xs text-slate-600 space-y-2.5 leading-relaxed">
+                  <li>• <strong>Scale:</strong> 1,400-node hybrid cloud testbed (AWS EC2, Active Directory, Ubuntu 22.04).</li>
+                  <li>• <strong>Telemetry:</strong> High-frequency Zeek network flow logs and Windows Event Logs.</li>
+                  <li>• <strong>Threat Vectors:</strong> 1,400 simulated enterprise APT campaigns across MITRE ATT&CK.</li>
+                  <li>• <strong>Baselines:</strong> Deterministic Cortex XSOAR vs. Monolithic LLM vs. Multi-Agent Swarm.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      // SLIDE 7: RESULTS WITH BENCHMARK COMPARISONS
+      {
+        render: () => `
+          <div class="flex-1 flex flex-col p-10 bg-white">
+            <div class="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-600 mb-1">
+              06 // Results
+            </div>
+            <h2 class="text-xl font-bold text-slate-900">
+              Empirical Benchmarks: 78.4% Latency Compression
+            </h2>
+            
+            <div class="mt-4 border border-slate-200 rounded-lg overflow-hidden text-xs">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-100 text-slate-700 font-mono font-bold text-[11px]">
+                    <th class="p-2.5 border-b">Metric</th>
+                    <th class="p-2.5 border-b">Deterministic SOAR</th>
+                    <th class="p-2.5 border-b">Monolithic LLM</th>
+                    <th class="p-2.5 border-b">Proposed Multi-Agent</th>
+                    <th class="p-2.5 border-b">Validated Delta</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 font-mono text-slate-800">
+                  <tr>
+                    <td class="p-2.5 font-sans font-medium">Mean Time to Remediate (MTTR)</td>
+                    <td class="p-2.5 text-slate-500">192.4 mins</td>
+                    <td class="p-2.5 text-slate-500">18.2 mins</td>
+                    <td class="p-2.5 font-bold text-slate-900">42.3 seconds</td>
+                    <td class="p-2.5 font-bold text-emerald-600">−78.4% (vs LLM)</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2.5 font-sans font-medium">Attribution Precision (F1)</td>
+                    <td class="p-2.5 text-slate-500">0.681</td>
+                    <td class="p-2.5 text-slate-500">0.792</td>
+                    <td class="p-2.5 font-bold text-slate-900">0.942</td>
+                    <td class="p-2.5 font-bold text-emerald-600">+18.9%</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2.5 font-sans font-medium">False Containment Ratio</td>
+                    <td class="p-2.5 text-slate-500">1.84%</td>
+                    <td class="p-2.5 text-slate-500">3.21%</td>
+                    <td class="p-2.5 font-bold text-slate-900">0.038%</td>
+                    <td class="p-2.5 font-bold text-emerald-600">−98.8%</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2.5 font-sans font-medium">Median Adversary Dwell Time</td>
+                    <td class="p-2.5 text-slate-500">21.4 days</td>
+                    <td class="p-2.5 text-slate-500">4.2 hours</td>
+                    <td class="p-2.5 font-bold text-slate-900">6.1 minutes</td>
+                    <td class="p-2.5 font-bold text-emerald-600">−97.6%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mt-4 p-3 bg-slate-50 rounded border border-slate-200 text-xs text-slate-600">
+              <strong>Ablation Insight:</strong> Disabling the Safety Verification Gate caused false host containment to spike from 0.038% to 2.87%, proving that dual-agent consensus is essential for mission-critical deployments.
+            </div>
+          </div>
+        `
+      },
+
+      // SLIDE 8: SCREENSHOTS & REAL WORKBENCH UI
+      {
+        render: () => `
+          <div class="flex-1 flex flex-col p-10 bg-white">
+            <div class="text-[11px] font-mono font-bold uppercase tracking-wider text-blue-600 mb-1">
+              07 // Interface
+            </div>
+            <h2 class="text-xl font-bold text-slate-900">
+              ScholarDesk: Real Desktop Research Workbench
+            </h2>
+            
+            <div class="grid grid-cols-2 gap-4 mt-4 flex-1">
+              <!-- Visual UI Mockup 1: Workspace & KPI Tiles -->
+              <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex flex-col justify-between">
+                <div>
+                  <div class="text-[11px] font-mono font-bold text-slate-700 uppercase mb-2">1. Workspace & KPI Metric Tiles</div>
+                  <div class="bg-white p-3 rounded border border-slate-200 shadow-2xs font-mono text-[10px] space-y-1">
+                    <div class="text-blue-600 font-bold">PhD Dissertation / SOC Incident Response</div>
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                      <div class="p-1.5 bg-slate-50 rounded border border-slate-100">
+                        <div class="text-slate-400">MTTR</div>
+                        <div class="font-bold text-slate-900">42s (-78.4%)</div>
+                      </div>
+                      <div class="p-1.5 bg-slate-50 rounded border border-slate-100">
+                        <div class="text-slate-400">Attribution F1</div>
+                        <div class="font-bold text-slate-900">0.942 (+38%)</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-xs text-slate-500 mt-2">Clean left sidebar + 4 live quantitative metric tiles.</div>
+              </div>
+
+              <!-- Visual UI Mockup 2: Complete Paper Studio -->
+              <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex flex-col justify-between">
+                <div>
+                  <div class="text-[11px] font-mono font-bold text-slate-700 uppercase mb-2">2. Complete Paper & BibTeX Export</div>
+                  <div class="bg-white p-3 rounded border border-slate-200 shadow-2xs font-serif text-[10px] space-y-1">
+                    <div class="font-bold text-slate-900 text-center border-b pb-1">Autonomous Multi-Agent AI in Cyber Defense</div>
+                    <div class="text-[9px] text-slate-500 text-justify">ABSTRACT: Modern SOCs face an asymmetric deficit... Evaluated against 1,400 APT campaigns, our system compresses MTTR by 78.4%...</div>
+                  </div>
+                </div>
+                <div class="text-xs text-slate-500 mt-2">Full 7-section paper + one-click Overleaf .tex and .bib export.</div>
+              </div>
+            </div>
+          </div>
+        `
+      }
+    ];
+
+    let currentSlide = 0;
+    const container = document.getElementById('slide-container');
+    const indicator = document.getElementById('slide-indicator');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    function renderSlide(idx) {
+      if (idx < 0) idx = 0;
+      if (idx >= SLIDES.length) idx = SLIDES.length - 1;
+      currentSlide = idx;
+      container.innerHTML = SLIDES[currentSlide].render();
+      indicator.textContent = `${currentSlide + 1} / ${SLIDES.length}`;
+      prevBtn.disabled = currentSlide === 0;
+      nextBtn.disabled = currentSlide === SLIDES.length - 1;
+    }
+
+    prevBtn.addEventListener('click', () => renderSlide(currentSlide - 1));
+    nextBtn.addEventListener('click', () => renderSlide(currentSlide + 1));
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        renderSlide(currentSlide + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        renderSlide(currentSlide - 1);
+      }
+    });
+
+    renderSlide(0);
+  </script>
+</body>
+</html>

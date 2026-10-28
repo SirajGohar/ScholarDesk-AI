@@ -1,0 +1,384 @@
+{
+  "name": "Multi-Agent AI Research Lab",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-001",
+      "name": "Start Research",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -900,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "topic-field",
+              "name": "topic",
+              "value": "How can multi-agent AI improve cybersecurity incident response?",
+              "type": "string"
+            },
+            {
+              "id": "depth-field",
+              "name": "depth",
+              "value": "standard",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "research-input-001",
+      "name": "Research Input (edit topic)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -680,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_OPENAI_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'gpt-4.1-mini', temperature: 0.2, messages: [{ role: 'system', content: 'You are the Research Planner Agent. Turn the research topic into 4-6 focused research questions and useful search queries. Return valid JSON with keys research_questions and search_queries. Do not invent findings.' }, { role: 'user', content: 'Topic: ' + $node['Research Input (edit topic)'].json.topic + '\\nDepth: ' + $node['Research Input (edit topic)'].json.depth }] } }}",
+        "options": {}
+      },
+      "id": "planner-001",
+      "name": "Agent 1 - Research Planner",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -430,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.choices?.[0]?.message?.content ?? '{}';\nlet parsed;\ntry { parsed = JSON.parse(raw.replace(/^```json\\s*/i, '').replace(/```$/, '').trim()); }\ncatch { parsed = { research_questions: [raw], search_queries: [raw] }; }\nreturn [{ json: { topic: $('Research Input (edit topic)').first().json.topic, depth: $('Research Input (edit topic)').first().json.depth, research_questions: parsed.research_questions || [], search_queries: parsed.search_queries || [] } }];"
+      },
+      "id": "parse-plan-001",
+      "name": "Parse Research Plan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -190,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { api_key: 'YOUR_TAVILY_API_KEY', query: $json.search_queries.join(' ; '), search_depth: 'advanced', max_results: 8, include_answer: false, include_raw_content: false } }}",
+        "options": {}
+      },
+      "id": "web-search-001",
+      "name": "Web Search (Tavily)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        50,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const plan = $('Parse Research Plan').first().json;\nconst results = ($json.results || []).map((r, i) => ({ id: `S${i+1}`, title: r.title || 'Untitled', url: r.url || '', content: r.content || r.raw_content || '', score: r.score ?? null }));\nreturn [{ json: { ...plan, sources: results } }];"
+      },
+      "id": "normalize-sources-001",
+      "name": "Prepare Evidence Pack",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        290,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_OPENAI_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'gpt-4.1-mini', temperature: 0.2, messages: [{ role: 'system', content: 'You are the Research Analyst Agent. Synthesize only the supplied evidence. Cite claims using source IDs such as [S1]. Explicitly identify uncertainty and gaps. Do not claim to have read beyond supplied snippets.' }, { role: 'user', content: 'Topic: ' + $json.topic + '\\nResearch questions: ' + JSON.stringify($json.research_questions) + '\\nEvidence: ' + JSON.stringify($json.sources) }] } }}",
+        "options": {}
+      },
+      "id": "analyst-001",
+      "name": "Agent 2 - Research Analyst",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const evidence = $('Prepare Evidence Pack').first().json;\nreturn [{ json: { ...evidence, analysis: $json.choices?.[0]?.message?.content || 'No analysis returned by the model.' } }];"
+      },
+      "id": "combine-analysis-001",
+      "name": "Attach Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_OPENAI_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'gpt-4.1-mini', temperature: 0.1, messages: [{ role: 'system', content: 'You are the Fact-Checking Agent. Compare analysis claims with the provided source snippets. Return a JSON array of notes. Categorize claims as supported, partially supported, or unverified. Do not say a claim is verified unless the evidence supports it.' }, { role: 'user', content: 'Analysis: ' + $json.analysis + '\\nSources: ' + JSON.stringify($json.sources) }] } }}",
+        "options": {}
+      },
+      "id": "fact-checker-001",
+      "name": "Agent 3 - Fact Checker",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1030,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Attach Analysis').first().json;\nreturn [{ json: { ...base, fact_check: $json.choices?.[0]?.message?.content || 'Fact-check output was empty.' } }];"
+      },
+      "id": "combine-facts-001",
+      "name": "Attach Fact Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1270,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_OPENAI_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'gpt-4.1-mini', temperature: 0.2, messages: [{ role: 'system', content: 'You are the Research Report Writer Agent. Produce a polished Markdown report with title, executive summary, methodology, key findings, limitations, future research, fact-check notes, and references. Use only supplied source URLs. Never fabricate references. Explain that snippets may not represent the full source.' }, { role: 'user', content: 'Topic: ' + $json.topic + '\\nResearch plan: ' + JSON.stringify($json.research_questions) + '\\nAnalysis: ' + $json.analysis + '\\nFact-check notes: ' + $json.fact_check + '\\nSources: ' + JSON.stringify($json.sources) }] } }}",
+        "options": {}
+      },
+      "id": "writer-001",
+      "name": "Agent 4 - Report Writer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1520,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Attach Fact Check').first().json;\nconst report = $json.choices?.[0]?.message?.content || 'No report returned.';\nreturn [{ json: { topic: base.topic, research_questions: base.research_questions, sources: base.sources, analysis: base.analysis, fact_check: base.fact_check, report_markdown: report, note: 'Review all citations and source pages before relying on this report.' } }];"
+      },
+      "id": "final-output-001",
+      "name": "Final Research Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "Start Research": {
+      "main": [
+        [
+          {
+            "node": "Research Input (edit topic)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Input (edit topic)": {
+      "main": [
+        [
+          {
+            "node": "Agent 1 - Research Planner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 1 - Research Planner": {
+      "main": [
+        [
+          {
+            "node": "Parse Research Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Research Plan": {
+      "main": [
+        [
+          {
+            "node": "Web Search (Tavily)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Search (Tavily)": {
+      "main": [
+        [
+          {
+            "node": "Prepare Evidence Pack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Evidence Pack": {
+      "main": [
+        [
+          {
+            "node": "Agent 2 - Research Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 2 - Research Analyst": {
+      "main": [
+        [
+          {
+            "node": "Attach Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Analysis": {
+      "main": [
+        [
+          {
+            "node": "Agent 3 - Fact Checker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 3 - Fact Checker": {
+      "main": [
+        [
+          {
+            "node": "Attach Fact Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Fact Check": {
+      "main": [
+        [
+          {
+            "node": "Agent 4 - Report Writer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 4 - Report Writer": {
+      "main": [
+        [
+          {
+            "node": "Final Research Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

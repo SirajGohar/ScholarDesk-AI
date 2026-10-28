@@ -1,0 +1,432 @@
+{
+  "name": "Multi-Agent AI Research Lab (Real-World Research & Problem Statement)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "research-task",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger-001",
+      "name": "Webhook - Start Research",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -900,
+        100
+      ],
+      "webhookId": "research-task-webhook-id"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "topic-field",
+              "name": "topic",
+              "value": "={{ $json.body?.topic || $json.topic || 'Autonomous Multi-Agent Systems in Critical Infrastructure Cyber Defense' }}",
+              "type": "string"
+            },
+            {
+              "id": "depth-field",
+              "name": "depth",
+              "value": "={{ $json.body?.depth || $json.depth || 'standard' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "research-input-001",
+      "name": "Research Input (edit topic)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -680,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_OPENAI_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'gpt-4.1-mini', temperature: 0.2, messages: [{ role: 'system', content: 'You are a Senior Principal Research Scientist. Turn the user topic into a rigorous research formulation: 1) A clear, concrete Problem Statement describing the real-world bottleneck and technical limitation in real words; 2) 4-6 specific research questions addressing fundamental gaps; 3) Targeted search queries for academic literature and empirical data. Return valid JSON with keys problem_statement, research_questions, and search_queries. Write in precise, natural, scholarly words. Avoid generic buzzwords.' }, { role: 'user', content: 'Topic: ' + $node['Research Input (edit topic)'].json.topic + '\\nDepth: ' + $node['Research Input (edit topic)'].json.depth }] } }}",
+        "options": {}
+      },
+      "id": "planner-001",
+      "name": "Agent 1 - Research Problem & Formulation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -430,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.choices?.[0]?.message?.content ?? '{}';\nlet parsed;\ntry { parsed = JSON.parse(raw.replace(/^```json\\s*/i, '').replace(/```$/, '').trim()); }\ncatch { parsed = { problem_statement: raw, research_questions: [raw], search_queries: [raw] }; }\nreturn [{ json: { topic: $('Research Input (edit topic)').first().json.topic, depth: $('Research Input (edit topic)').first().json.depth, problem_statement: parsed.problem_statement || '', research_questions: parsed.research_questions || [], search_queries: parsed.search_queries || [] } }];"
+      },
+      "id": "parse-plan-001",
+      "name": "Parse Problem & Research Plan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -190,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { api_key: 'YOUR_TAVILY_API_KEY', query: $json.search_queries.join(' ; '), search_depth: 'advanced', max_results: 8, include_answer: false, include_raw_content: false } }}",
+        "options": {}
+      },
+      "id": "web-search-001",
+      "name": "Literature & Evidence Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        50,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const plan = $('Parse Problem & Research Plan').first().json;\nconst results = ($json.results || []).map((r, i) => ({ id: `S${i+1}`, title: r.title || 'Untitled', url: r.url || '', content: r.content || r.raw_content || '', score: r.score ?? null }));\nreturn [{ json: { ...plan, sources: results } }];"
+      },
+      "id": "normalize-sources-001",
+      "name": "Compile Evidence Dossier",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        290,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_OPENAI_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'gpt-4.1-mini', temperature: 0.2, messages: [{ role: 'system', content: 'You are an Empirical Research Analyst. Analyze the supplied literature against the formulated problem statement. Identify: 1) Current state-of-the-art baselines; 2) Fundamental architectural or operational bottlenecks; 3) Unaddressed failure modes. Cite claims using source IDs [S1..Sn]. Write in grounded, real-world engineering terms.' }, { role: 'user', content: 'Topic: ' + $json.topic + '\\nProblem Statement: ' + $json.problem_statement + '\\nQuestions: ' + JSON.stringify($json.research_questions) + '\\nEvidence: ' + JSON.stringify($json.sources) }] } }}",
+        "options": {}
+      },
+      "id": "analyst-001",
+      "name": "Agent 2 - Literature & Gap Analyst",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const evidence = $('Compile Evidence Dossier').first().json;\nreturn [{ json: { ...evidence, analysis: $json.choices?.[0]?.message?.content || 'No analysis returned.' } }];"
+      },
+      "id": "combine-analysis-001",
+      "name": "Attach Gap Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_OPENAI_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'gpt-4.1-mini', temperature: 0.1, messages: [{ role: 'system', content: 'You are an Academic Peer Reviewer and Technical Feasibility Auditor. Audit the gap analysis against the source snippets. Return a JSON array with objects containing { claim, status, source, notes, technical_feasibility }. Categorize status as Supported, Partially Supported, or Unverified. Highlight computational limits and real-world failure risks.' }, { role: 'user', content: 'Analysis: ' + $json.analysis + '\\nSources: ' + JSON.stringify($json.sources) }] } }}",
+        "options": {}
+      },
+      "id": "fact-checker-001",
+      "name": "Agent 3 - Feasibility & Fact Auditor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1030,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Attach Gap Analysis').first().json;\nreturn [{ json: { ...base, fact_check: $json.choices?.[0]?.message?.content || '[]' } }];"
+      },
+      "id": "combine-facts-001",
+      "name": "Attach Feasibility Audit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1270,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_OPENAI_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'gpt-4.1-mini', temperature: 0.2, messages: [{ role: 'system', content: 'You are a Senior R&D Director and Principal Investigator. Produce a comprehensive, formal Research Proposal & Investigation Dossier in clean Markdown. Avoid hollow AI buzzwords and robotic hype. Write in authoritative, real-world scholarly prose. Structure with these sections:\\n# [Title]\\n\\n## 1. Problem Statement & Industrial/Scientific Reality\\n(Articulate the exact real-world bottleneck, quantifiable failure metrics, and why current solutions are inadequate)\\n\\n## 2. Novel Research Idea & Core Hypothesis\\n(Specify the proposed novel technical angle, theoretical foundation, and concrete mechanism)\\n\\n## 3. Critical Analysis of Prior Work & State of the Art\\n(Review current benchmarks, citing [S1..Sn] accurately)\\n\\n## 4. Proposed Experimental Design & Evaluation Protocol\\n(Define benchmark datasets, baseline models, ablation matrix, and primary evaluation metrics)\\n\\n## 5. Technical Feasibility, Failure Modes & Edge Cases\\n(Discuss compute constraints, adversarial vulnerabilities, and operational risks)\\n\\n## 6. Implementation Milestones\\n(Outline Phase 1 proof of concept to Phase 4 production validation)\\n\\n## 7. References & Sources\\n(List supplied sources with URLs)' }, { role: 'user', content: 'Topic: ' + $json.topic + '\\nProblem Statement: ' + $json.problem_statement + '\\nQuestions: ' + JSON.stringify($json.research_questions) + '\\nAnalysis: ' + $json.analysis + '\\nAudit: ' + $json.fact_check + '\\nSources: ' + JSON.stringify($json.sources) }] } }}",
+        "options": {}
+      },
+      "id": "writer-001",
+      "name": "Agent 4 - Research Proposal Author",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1520,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Attach Feasibility Audit').first().json;\nconst report = $json.choices?.[0]?.message?.content || 'No proposal generated.';\nreturn [{\n  json: {\n    topic: base.topic,\n    depth: base.depth,\n    problem_statement: base.problem_statement,\n    research_questions: base.research_questions,\n    search_queries: base.search_queries,\n    sources: base.sources,\n    analysis: base.analysis,\n    fact_check: base.fact_check,\n    report_markdown: report,\n    status: 'Verified Research Dossier',\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "final-output-001",
+      "name": "Final Research Dossier",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Authorization"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-webhook-001",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2000,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook - Start Research": {
+      "main": [
+        [
+          {
+            "node": "Research Input (edit topic)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Input (edit topic)": {
+      "main": [
+        [
+          {
+            "node": "Agent 1 - Research Problem & Formulation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 1 - Research Problem & Formulation": {
+      "main": [
+        [
+          {
+            "node": "Parse Problem & Research Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Problem & Research Plan": {
+      "main": [
+        [
+          {
+            "node": "Literature & Evidence Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Literature & Evidence Search": {
+      "main": [
+        [
+          {
+            "node": "Compile Evidence Dossier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compile Evidence Dossier": {
+      "main": [
+        [
+          {
+            "node": "Agent 2 - Literature & Gap Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 2 - Literature & Gap Analyst": {
+      "main": [
+        [
+          {
+            "node": "Attach Gap Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Gap Analysis": {
+      "main": [
+        [
+          {
+            "node": "Agent 3 - Feasibility & Fact Auditor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 3 - Feasibility & Fact Auditor": {
+      "main": [
+        [
+          {
+            "node": "Attach Feasibility Audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Feasibility Audit": {
+      "main": [
+        [
+          {
+            "node": "Agent 4 - Research Proposal Author",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 4 - Research Proposal Author": {
+      "main": [
+        [
+          {
+            "node": "Final Research Dossier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Research Dossier": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
